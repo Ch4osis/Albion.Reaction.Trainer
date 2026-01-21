@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Albion ZvZ Reaction Trainer</title>
+
 <style>
   body {
     background: black;
@@ -10,56 +11,55 @@
     text-align: center;
     font-family: Arial, sans-serif;
   }
+
   video {
     width: 80%;
     margin-top: 20px;
     border: 2px solid white;
   }
+
   #status {
     font-size: 28px;
     margin-top: 20px;
   }
 </style>
 </head>
+
 <body>
 
 <h1>Albion ZvZ Reaction Trainer</h1>
 <p>Naciśnij <b>F</b> gdy guślarz dotknie ziemi</p>
 
-<video id="video" controls>
-  <source src="zvz.mp4" type="video/mp4">
-</video>
+<!-- VIDEO – bez <source>, JS ustawia src -->
+<video id="video" controls></video>
 
 <div id="status">Czekam…</div>
 
 <script>
 const clips = [
   {
-    file: "zvz1.mp4",
-    key: "1",
-    windowStart: 5.50,
-    windowLength: 0.50
+    file: "./zvz1.mp4",
+    key: "f",
+    windowStart: 5.5,
+    windowLength: 0.5
   },
   {
-    file: "zvz2.mp4",
+    file: "./zvz2.mp4",
     key: "f",
-    windowStart: 1.00,
-    windowLength: 0.50
-  },
-
+    windowStart: 1.0,
+    windowLength: 0.5
+  }
 ];
 
 let order = [];
 let currentIndex = 0;
-let state = "waiting"; 
-// waiting | playing | resolved
-
+let state = "waiting"; // waiting | playing | resolved
 let reacted = false;
 
 const video = document.getElementById("video");
 const status = document.getElementById("status");
 
-/* ===== LOSOWA KOLEJNOŚĆ BEZ POWTÓREK ===== */
+/* LOSOWA KOLEJNOŚĆ */
 function shuffle(array) {
   return array
     .map(v => ({ v, r: Math.random() }))
@@ -67,17 +67,18 @@ function shuffle(array) {
     .map(x => x.v);
 }
 
-/* ===== START RUNU ===== */
+/* START CAŁEGO RUNU */
 function startRun() {
   order = shuffle([...clips]);
   currentIndex = 0;
   askReady();
 }
 
-/* ===== PYTANIE "GOTOWY?" ===== */
+/* PYTANIE GOTOWOŚCI */
 function askReady() {
   state = "waiting";
   reacted = false;
+
   video.pause();
   video.removeAttribute("src");
   video.load();
@@ -85,7 +86,7 @@ function askReady() {
   status.textContent = "👉 JESTEŚ GOTOWY? (naciśnij G)";
 }
 
-/* ===== START KLIPU ===== */
+/* START KLIPU */
 function startClip() {
   const clip = order[currentIndex];
   reacted = false;
@@ -98,17 +99,15 @@ function startClip() {
   status.textContent = `KLAWISZ: ${clip.key.toUpperCase()}`;
 }
 
-/* ===== INPUT ===== */
+/* OBSŁUGA KLAWISZY */
 document.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
 
-  /* GOTOWY */
   if (state === "waiting" && key === "g") {
     startClip();
     return;
   }
 
-  /* REAKCJA */
   if (state !== "playing" || reacted) return;
 
   const clip = order[currentIndex];
@@ -117,18 +116,17 @@ document.addEventListener("keydown", (e) => {
 
   if (key === clip.key) {
     reacted = true;
+    state = "resolved";
 
     if (time >= clip.windowStart && time <= windowEnd) {
-      state = "resolved";
       status.textContent = "✅ GOOD";
     } else {
-      state = "resolved";
       status.textContent = "❌ FAIL";
     }
   }
 });
 
-/* ===== KONIEC WIDEO ===== */
+/* KONIEC WIDEO */
 video.addEventListener("ended", () => {
   if (state !== "resolved") {
     status.textContent = "❌ FAIL";
@@ -136,12 +134,9 @@ video.addEventListener("ended", () => {
 
   setTimeout(() => {
     if (status.textContent.includes("FAIL")) {
-      // TEN SAM KLIP
-      askReady();
+      askReady(); // powtórz ten sam
     } else {
-      // NASTĘPNY KLIP
       currentIndex++;
-
       if (currentIndex < order.length) {
         askReady();
       } else {
@@ -155,6 +150,8 @@ video.addEventListener("ended", () => {
 startRun();
 </script>
 
-
 </body>
 </html>
+
+</html>
+
